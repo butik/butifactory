@@ -75,3 +75,6 @@ libraryDependencies ++= Seq(
 )
 
 libraryDependencies += "org.flywaydb" % "flyway-core" % "5.2.1"
+
+libraryDependencies += "net.dongliu" % "apk-parser" % "2.6.4"
+
