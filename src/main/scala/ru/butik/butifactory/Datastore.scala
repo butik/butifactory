@@ -12,16 +12,6 @@ object Datastore {
     implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
     val xa = Transactor.fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1")
 //    val xa = Transactor.fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:~/test")
-    val y = xa.yolo
-    import y._
-
-    val createArtifacts = sql"""
-    CREATE TABLE artifacts (
-      id   integer auto_increment,
-      name VARCHAR
-    )
-  """.update.run
-    createArtifacts.transact(xa).unsafeRunSync()
 
     new Datastore(xa)
   }

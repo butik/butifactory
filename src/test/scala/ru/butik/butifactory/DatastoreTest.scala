@@ -1,10 +1,15 @@
 package ru.butik.butifactory
 
 import org.scalatest.FunSpec
+import org.flywaydb.core.Flyway
 
 class DatastoreTest extends FunSpec {
 
   it("should setup db") {
+
+    val flyway: Flyway = Flyway.configure().dataSource("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", null, null).load
+    flyway.migrate
+
     val db = Datastore.init()
 
     val artifact = Artifact(0, "test")
