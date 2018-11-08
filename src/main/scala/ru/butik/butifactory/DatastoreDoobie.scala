@@ -51,4 +51,9 @@ class DatastoreDoobie(xa: Transactor.Aux[IO, Unit]) extends Datastore {
     } yield p
     res.transact(xa).unsafeRunSync()
   }
+
+  override def findVersionsBy(group: String, name: String): List[ArtifactVersion] = {
+    val artifactName = s"$group.$name"
+    sql"select name, version, filename from artifacts_versions where name = $artifactName".query[ArtifactVersion].to[List].transact(xa).unsafeRunSync
+  }
 }

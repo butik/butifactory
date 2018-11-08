@@ -36,4 +36,18 @@ class DatastoreTest extends FunSpec {
     assert(db.findArtifactVersion("unknown", version) === None)
   }
 
+  it("should fetch artifact versions") {
+    val flyway: Flyway = Flyway.configure().dataSource("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", null, null).load
+    flyway.migrate
+
+    val db = DatastoreDoobie.init()
+
+    val artifact = "test.one"
+    val version = "1.2.3+Test"
+    val filename = "apktest.apk"
+
+    assert(db.createArtifactVersion(artifact, version, filename) === ArtifactVersion(artifact, version, filename))
+    assert(db.findVersionsBy("test", "one") ===
+      List(ArtifactVersion(artifact, version, filename)))
+  }
 }
