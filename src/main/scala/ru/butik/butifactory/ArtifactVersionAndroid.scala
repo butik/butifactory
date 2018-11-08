@@ -1,3 +1,3 @@
 package ru.butik.butifactory
 
-case class ArtifactVersionAndroid(code: Int, version: String)
+case class ArtifactVersionAndroid(version: String, url: String)

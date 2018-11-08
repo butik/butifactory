@@ -24,8 +24,8 @@ object Endpoint {
   }
 
 
-  def makeService(apkService: ApkService): Service[Request, Response] = (
-    VersionsHandler.versions :+:
+  def makeService(datastore: Datastore, frontend: ArtifactStorageFrontend, apkService: ApkService): Service[Request, Response] = (
+    VersionsHandler.versions(datastore, frontend) :+:
       FileHandler.artifactUpload(apkService)
     ).toService
 }

@@ -21,5 +21,5 @@ object Main extends App {
   Await.ready(
     Http.server.serve(
       addr = ":8081",
-      Endpoint.makeService(apkService)))
+      Endpoint.makeService(db, storageFrontend, apkService)))
 }
