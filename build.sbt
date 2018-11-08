@@ -79,4 +79,5 @@ libraryDependencies += "org.flywaydb" % "flyway-core" % "5.2.1"
 libraryDependencies += "net.dongliu" % "apk-parser" % "2.6.4"
 
 libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0"
+libraryDependencies += "com.gilt" %% "gfc-semver" % "0.0.5"
 

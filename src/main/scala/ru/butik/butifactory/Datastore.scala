@@ -5,7 +5,8 @@ import doobie.implicits._
 
 import scala.concurrent.ExecutionContext
 
-case class Artifact(id: Int, name: String)
+case class Artifact(name: String)
+case class ArtifactVersion(name: String, version: String, filename: String)
 
 object Datastore {
   def init(): Datastore = {
@@ -19,23 +20,47 @@ object Datastore {
 
 class Datastore(xa: Transactor.Aux[IO, Unit]) {
   def artifacts(): List[Artifact] = {
-    sql"select id, name from artifacts".query[Artifact].to[List].transact(xa).unsafeRunSync
+    sql"select name from artifacts".query[Artifact].to[List].transact(xa).unsafeRunSync
   }
 
   def createArtifact(name: String): Artifact = {
     val res = for {
-      _  <- sql"insert into artifacts(name) values ($name)".update.run
-      id <- sql"select lastval()".query[Long].unique
-      p  <- sql"select id, name from artifacts where id = $id".query[Artifact].unique
+      _ <- sql"insert into artifacts(name) values ($name)".update.run
+      p  <- sql"select name from artifacts where name = $name".query[Artifact].unique
     } yield p
     res.transact(xa).unsafeRunSync()
   }
 
-  def saveArtifact(artifact: Artifact): Unit = {
-    sql"update artifacts set name = ${artifact.name} where id = ${artifact.id}".update.run.transact(xa).unsafeRunSync
+//  def createArtifact(name: String): Artifact = {
+//    val res = for {
+//      _  <- sql"insert into artifacts(name) values ($name)".update.run
+//      id <- sql"select lastval()".query[Long].unique
+//      p  <- sql"select id, name from artifacts where id = $id".query[Artifact].unique
+//    } yield p
+//    res.transact(xa).unsafeRunSync()
+//  }
+
+//  def saveArtifact(artifact: Artifact): Unit = {
+//    sql"update artifacts set name = ${artifact.name} where id = ${artifact.id}".update.run.transact(xa).unsafeRunSync
+//  }
+
+  def findArtifactByName(name: String): Option[Artifact] = {
+    sql"select name from artifacts where name = $name".query[Artifact].option.transact(xa).unsafeRunSync()
   }
 
-  def findArtifact(id: Int): Option[Artifact] = {
-    sql"select id, name from artifacts where id = $id".query[Artifact].option.transact(xa).unsafeRunSync()
+  def findArtifactVersion(name: String, version: String): Option[ArtifactVersion] = {
+    sql"select name, version, filename from artifacts_versions where name = $name and version = $version"
+      .query[ArtifactVersion]
+      .option
+      .transact(xa)
+      .unsafeRunSync()
+  }
+
+  def createArtifactVersion(name: String, version: String, filename: String): ArtifactVersion = {
+    val res = for {
+      _ <- sql"insert into artifacts_versions(name, version, filename) values ($name, $version, $filename)".update.run
+      p  <- sql"select name, version, filename from artifacts_versions where name = $name and version = $version".query[ArtifactVersion].unique
+    } yield p
+    res.transact(xa).unsafeRunSync()
   }
 }

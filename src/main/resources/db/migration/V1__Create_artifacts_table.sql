@@ -1,4 +1,4 @@
 CREATE TABLE artifacts (
-  id   integer auto_increment,
-  name VARCHAR
+  name VARCHAR,
+  primary key(name)
 );
