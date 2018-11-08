@@ -4,10 +4,28 @@ import io.circe.generic.auto._
 import io.finch.circe._
 import com.twitter.finagle.Service
 import com.twitter.finagle.http.{Request, Response}
+import io.circe.{Encoder, Json}
+import io.finch._
+
 
 object Endpoint {
-  def makeService(): Service[Request, Response] = (
+  def errorToJson(e: Error): Json = e match {
+    case Error.NotPresent(_) =>
+      Json.obj("error" -> Json.fromString("something_not_present"))
+    case Error.NotParsed(_, _, _) =>
+      Json.obj("error" -> Json.fromString("something_not_parsed"))
+    case Error.NotValid(item, rule) =>
+      Json.obj("error" -> Json.fromString(s"${item.description} $rule"))
+  }
+
+  implicit val ee: Encoder[Exception] = Encoder.instance {
+    case e: Error => errorToJson(e)
+    case Errors(nel) => Json.arr(nel.toList.map(errorToJson): _*)
+  }
+
+
+  def makeService(apkService: ApkService): Service[Request, Response] = (
     VersionsHandler.versions :+:
-      FileHandler.artifactUpload
+      FileHandler.artifactUpload(apkService)
     ).toService
 }

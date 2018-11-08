@@ -10,7 +10,7 @@ class DatastoreTest extends FunSpec {
     val flyway: Flyway = Flyway.configure().dataSource("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", null, null).load
     flyway.migrate
 
-    val db = Datastore.init()
+    val db = DatastoreDoobie.init()
 
     val artifact = Artifact("test")
     assert(db.createArtifact("test") === Artifact("test"))
@@ -25,7 +25,7 @@ class DatastoreTest extends FunSpec {
     val flyway: Flyway = Flyway.configure().dataSource("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", null, null).load
     flyway.migrate
 
-    val db = Datastore.init()
+    val db = DatastoreDoobie.init()
 
     val artifact = "test"
     val version = "1.2.3+Test"
