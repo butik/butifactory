@@ -3,7 +3,6 @@ package ru.butik.butifactory
 import java.io.File
 
 import better.files._
-import File._
 
 import better.files.{File => ScalaFile, _}
 import com.twitter.concurrent.AsyncStream
@@ -14,7 +13,7 @@ import com.twitter.conversions.storage._
 import org.apache.commons.io.FilenameUtils
 
 trait ArtifactStorage {
-  def storeArtifact(path: String, file: File)
+  def storeArtifact(path: String, file: File): Unit
   def uri(path: String): Either[String, String]
 }
 
@@ -29,7 +28,7 @@ class ArtifactStorageImpl(backend: ArtifactStorageBackend, frontend: ArtifactSto
 }
 
 trait ArtifactStorageBackend {
-  def storeArtifact(path: String, file: File)
+  def storeArtifact(path: String, file: File): ScalaFile
   def artifactURI(path: String): Either[String, String]
 }
 
@@ -57,7 +56,7 @@ object ArtifactStorageBackend {
       directory.mkdirs()
     }
 
-    override def storeArtifact(path: String, file: File): Unit = {
+    override def storeArtifact(path: String, file: File): ScalaFile = {
       (dir / path).parent.createDirectories()
       file.toScala.copyTo(dir / path)
     }

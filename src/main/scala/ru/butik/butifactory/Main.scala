@@ -6,7 +6,6 @@ import com.twitter.finagle.Http
 import com.twitter.util.Await
 import org.flywaydb.core.Flyway
 import ru.butik.butifactory.ArtifactStorageBackend.{DiskArtifactStorageBackend, SelfHostedHTTPArtifactStorageFrontend}
-import io.finch.circe._
 import pureconfig.generic.auto._
 
 object Main extends App {
@@ -19,12 +18,11 @@ object Main extends App {
 
   val storageBackend = new DiskArtifactStorageBackend(cfg.dataDir)
   val storageFrontend = new SelfHostedHTTPArtifactStorageFrontend(cfg.servePath, cfg.dataDir)
-  val storage = new ArtifactStorageImpl(storageBackend, storageFrontend)
 
   val apkService = new ApkService(db, storageBackend)
 
   Await.ready(
     Http.server.serve(
       addr = cfg.addr,
-      Endpoint.makeService(db, storageFrontend, apkService)))
+      ApiEndpoints.makeService(db, storageFrontend, apkService)))
 }

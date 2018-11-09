@@ -8,7 +8,7 @@ import io.circe.{Encoder, Json}
 import io.finch._
 
 
-object Endpoint {
+object ApiEndpoints {
   def errorToJson(e: Error): Json = e match {
     case Error.NotPresent(_) =>
       Json.obj("error" -> Json.fromString("something_not_present"))
