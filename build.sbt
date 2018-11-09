@@ -59,6 +59,16 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
 )
 
+assemblyMergeStrategy in assembly := {
+  case "META-INF/io.netty.versions.properties" =>
+    MergeStrategy.first
+  case "BUILD" =>
+    MergeStrategy.first // finagle
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+}
+
 lazy val finchVersion = "0.25.0"
 
 libraryDependencies ++= Seq(
