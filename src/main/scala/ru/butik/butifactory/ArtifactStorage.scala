@@ -1,9 +1,17 @@
 package ru.butik.butifactory
 
 import java.io.File
+
 import better.files._
 import File._
+
 import better.files.{File => ScalaFile, _}
+import com.twitter.concurrent.AsyncStream
+import com.twitter.io.{Buf, Reader}
+import io.finch._
+import io.finch.syntax._
+import com.twitter.conversions.storage._
+import org.apache.commons.io.FilenameUtils
 
 trait ArtifactStorage {
   def storeArtifact(path: String, file: File)
@@ -27,13 +35,19 @@ trait ArtifactStorageBackend {
 
 trait ArtifactStorageFrontend {
   def pathToURL(path: String): String
+  val fileServeHandler: Endpoint[AsyncStream[Buf]]
 }
 
 object ArtifactStorageBackend {
 
-  class SelfHostedHTTPArtifactStorageFrontend(host: String) extends ArtifactStorageFrontend {
+  class SelfHostedHTTPArtifactStorageFrontend(host: String, dataDir: String) extends ArtifactStorageFrontend {
     override def pathToURL(path: String): String = {
       host + path
+    }
+
+    val fileServeHandler: Endpoint[AsyncStream[Buf]] = get(dataDir :: paths[String]) { paths: Seq[String] =>
+      val reader: Reader = Reader.fromFile((dataDir / FilenameUtils.normalizeNoEndSeparator(paths.mkString("/"))).toJava)
+      Ok(AsyncStream.fromReader(reader, chunkSize = 512.kilobytes.inBytes.toInt))
     }
   }
 

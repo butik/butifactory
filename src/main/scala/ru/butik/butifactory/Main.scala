@@ -18,7 +18,7 @@ object Main extends App {
   val db = DatastoreDoobie.init(cfg.db)
 
   val storageBackend = new DiskArtifactStorageBackend(cfg.dataDir)
-  val storageFrontend = new SelfHostedHTTPArtifactStorageFrontend(cfg.servePath)
+  val storageFrontend = new SelfHostedHTTPArtifactStorageFrontend(cfg.servePath, cfg.dataDir)
   val storage = new ArtifactStorageImpl(storageBackend, storageFrontend)
 
   val apkService = new ApkService(db, storageBackend)
