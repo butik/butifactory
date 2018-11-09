@@ -12,7 +12,7 @@ class DiskArtifactStorageBackendTest extends FunSpec
   private val testDataDir = "target" / "tmp"
 
   before {
-    testDataDir.delete()
+    testDataDir.delete(swallowIOExceptions = true)
   }
 
   it("should save artifact") {
