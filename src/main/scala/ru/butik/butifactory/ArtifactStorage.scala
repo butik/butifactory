@@ -9,7 +9,6 @@ import com.twitter.concurrent.AsyncStream
 import com.twitter.io.{Buf, Reader}
 import io.finch._
 import io.finch.syntax._
-import com.twitter.conversions.storage._
 import org.apache.commons.io.FilenameUtils
 
 trait ArtifactStorage {
@@ -44,9 +43,19 @@ object ArtifactStorageBackend {
       host + path
     }
 
+    def fromReader(reader: Reader[Buf]): AsyncStream[Buf] =
+      AsyncStream.fromFuture(reader.read(Int.MaxValue)).flatMap {
+        case None => AsyncStream.empty
+        case Some(a) => a +:: fromReader(reader)
+      }
+
     val fileServeHandler: Endpoint[AsyncStream[Buf]] = get(dataDir :: paths[String]) { paths: Seq[String] =>
-      val reader: Reader = Reader.fromFile((dataDir / FilenameUtils.normalizeNoEndSeparator(paths.mkString("/"))).toJava)
-      Ok(AsyncStream.fromReader(reader, chunkSize = 512.kilobytes.inBytes.toInt))
+      val reader: Reader[Buf] = Reader.fromFile((dataDir / FilenameUtils.normalizeNoEndSeparator(paths.mkString("/"))).toJava)
+      Ok(AsyncStream.fromFuture(reader.read(Int.MaxValue)).flatMap {
+        case None => AsyncStream.empty
+        case Some(a) => a +:: fromReader(reader)
+      })
+      //  .fromReader(reader, chunkSize = 512.kilobytes.inBytes.toInt)
     }
   }
 

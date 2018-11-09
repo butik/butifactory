@@ -59,9 +59,11 @@ scalacOptions ++= Seq(
   "-Ywarn-value-discard"               // Warn when non-Unit expression results are unused.
 )
 
+lazy val finchVersion = "0.25.0"
+
 libraryDependencies ++= Seq(
-  "com.github.finagle" %% "finch-core" % "0.22.0",
-  "com.github.finagle" %% "finch-circe" % "0.22.0",
+  "com.github.finagle" %% "finch-core" % finchVersion,
+  "com.github.finagle" %% "finch-circe" % finchVersion,
   "io.circe" %% "circe-generic" % "0.9.0"
 )
 
@@ -86,3 +88,4 @@ libraryDependencies += "com.github.pureconfig" %% "pureconfig" % "0.10.0"
 
 libraryDependencies += "commons-io" % "commons-io" % "2.6"
 
+libraryDependencies += "com.twitter" %% "twitter-server" % "18.10.0"
