@@ -9,9 +9,11 @@ case class Artifact(name: String)
 case class ArtifactVersion(name: String, version: String, filename: String)
 
 object DatastoreDoobie {
-  def init(): DatastoreDoobie = {
+  val testUrl = "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1"
+
+  def init(url: String): DatastoreDoobie = {
     implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
-    val xa = Transactor.fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1")
+    val xa = Transactor.fromDriverManager[IO]("org.h2.Driver", url)
 //    val xa = Transactor.fromDriverManager[IO]("org.h2.Driver", "jdbc:h2:~/test")
 
     new DatastoreDoobie(xa)

@@ -82,4 +82,5 @@ libraryDependencies += "com.github.pathikrit" %% "better-files" % "3.6.0"
 libraryDependencies += "com.gilt" %% "gfc-semver" % "0.0.5"
 
 libraryDependencies += "org.scalamock" %% "scalamock" % "4.1.0" % Test
+libraryDependencies += "com.github.pureconfig" %% "pureconfig" % "0.10.0"
 

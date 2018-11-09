@@ -44,7 +44,7 @@ object FileHandler {
         }
         rs.get()
       } catch {
-        case NonFatal(e) => BadRequest(new IllegalArgumentException("bad apk"))
+        case NonFatal(e) => BadRequest(new IllegalArgumentException(e))
       }
 
       res

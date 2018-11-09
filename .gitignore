@@ -23,3 +23,7 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 .idea
+
+# Butifactory specific
+data/*
+*.db

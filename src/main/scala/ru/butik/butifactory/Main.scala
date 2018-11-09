@@ -1,25 +1,30 @@
 package ru.butik.butifactory
 
+import java.nio.file.Paths
+
 import com.twitter.finagle.Http
 import com.twitter.util.Await
 import org.flywaydb.core.Flyway
 import ru.butik.butifactory.ArtifactStorageBackend.{DiskArtifactStorageBackend, SelfHostedHTTPArtifactStorageFrontend}
 import io.finch.circe._
+import pureconfig.generic.auto._
 
 object Main extends App {
-  val flyway: Flyway = Flyway.configure().dataSource("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", null, null).load
+  val cfg: Config = pureconfig.loadConfigFromFilesOrThrow[Config](files = List(Paths.get("butifactory.conf")))
+
+  val flyway: Flyway = Flyway.configure().dataSource(cfg.db, null, null).load
   flyway.migrate
 
-  val db = DatastoreDoobie.init()
+  val db = DatastoreDoobie.init(cfg.db)
 
-  val storageBackend = new DiskArtifactStorageBackend("target/tmp")
-  val storageFrontend = new SelfHostedHTTPArtifactStorageFrontend("artifact.butik.ru")
+  val storageBackend = new DiskArtifactStorageBackend(cfg.dataDir)
+  val storageFrontend = new SelfHostedHTTPArtifactStorageFrontend(cfg.servePath)
   val storage = new ArtifactStorageImpl(storageBackend, storageFrontend)
 
   val apkService = new ApkService(db, storageBackend)
 
   Await.ready(
     Http.server.serve(
-      addr = ":8081",
+      addr = cfg.addr,
       Endpoint.makeService(db, storageFrontend, apkService)))
 }
