@@ -49,7 +49,7 @@ object ArtifactStorageBackend {
         case Some(a) => a +:: fromReader(reader)
       }
 
-    val fileServeHandler: Endpoint[AsyncStream[Buf]] = get(dataDir :: paths[String]) { paths: Seq[String] =>
+    val fileServeHandler: Endpoint[AsyncStream[Buf]] = get("data" :: paths[String]) { paths: Seq[String] =>
       val reader: Reader[Buf] = Reader.fromFile((dataDir / FilenameUtils.normalizeNoEndSeparator(paths.mkString("/"))).toJava)
       Ok(AsyncStream.fromFuture(reader.read(Int.MaxValue)).flatMap {
         case None => AsyncStream.empty
