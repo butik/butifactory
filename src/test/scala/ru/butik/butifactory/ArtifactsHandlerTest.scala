@@ -22,12 +22,12 @@ class ArtifactsHandlerTest extends FunSpec
     (datastore.findArtifactByName _).expects(*).returns(
       None
     )
-    (datastore.createArtifact _).expects("group.name").returns(
-      Artifact("group.name")
+    (datastore.createArtifact _).expects("group").returns(
+      Artifact("group")
     )
 
-    val Some(response) = ArtifactsHandler.create(datastore)(Input.post("/artifacts/group/name")).awaitValueUnsafe()
+    val Some(response) = ArtifactsHandler.create(datastore)(Input.post("/artifacts/group")).awaitValueUnsafe()
 
-    assert(response.name === "group.name")
+    assert(response.name === "group")
   }
 }

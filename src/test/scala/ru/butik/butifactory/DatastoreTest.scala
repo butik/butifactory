@@ -47,7 +47,7 @@ class DatastoreTest extends FunSpec {
     val filename = "apktest.apk"
 
     assert(db.createArtifactVersion(artifact, version, filename) === ArtifactVersion(artifact, version, filename))
-    assert(db.findVersionsBy("test", "one") ===
+    assert(db.findVersionsBy("test.one") ===
       List(ArtifactVersion(artifact, version, filename)))
   }
 }

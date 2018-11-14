@@ -15,14 +15,14 @@ class VersionHanderTest extends FunSpec
     (frontendStorage.pathToURL _).expects("test_url4").returns(url4)
 
     val datastore = mock[Datastore]
-    (datastore.findVersionsBy _).expects("group", "name").returns(
+    (datastore.findVersionsBy _).expects("group.name").returns(
       List(
         ArtifactVersion("group.name", "1.1.2", "test_url2"),
         ArtifactVersion("group.name", "1.1.4", "test_url4")
       )
     )
 
-    val Some(response) = VersionsHandler.versions(datastore, frontendStorage)(Input.get("/versions/group/name")).awaitValueUnsafe()
+    val Some(response) = VersionsHandler.versions(datastore, frontendStorage)(Input.get("/versions/group.name")).awaitValueUnsafe()
 
     assert(response.bundleName === "group.name")
     assert(response.versions === List(
