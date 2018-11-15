@@ -27,18 +27,18 @@ class ApkServerTest extends FunSpec
 
   it("should check for version") {
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
-    (datastore.findArtifactVersion _).expects(*, *).returning(Some(ArtifactVersion("name", "1.2.3", "file")))
+    (datastore.findArtifactVersion _).expects(*, *).returning(Some(ArtifactVersion("name", "1.2.3", 6, "file")))
 
     assert(service.uploadFile(apkContainer) === Left("already exist"))
   }
 
   it("should create artifact and store in storage") {
-    val expect = ArtifactVersion("ru.butik.fitassist.Fit-Assist", "1.1.3", "ru.butik.fitassist/Fit-Assist-1.1.3.apk")
+    val expect = ArtifactVersion("ru.butik.fitassist.Fit-Assist", "1.1.3", 6, "ru.butik.fitassist/Fit-Assist-1.1.3.apk")
 
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
     (datastore.findArtifactVersion _).expects(*, *).returning(None)
     (datastore.createArtifactVersion _)
-      .expects(expect.name, expect.version, expect.filename)
+      .expects(expect.name, expect.version, expect.versionCode, expect.filename)
       .returning(expect)
 
     (storage.storeArtifact _).expects(expect.filename, apkContainer.file)

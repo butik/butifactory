@@ -1,6 +1,5 @@
 package ru.butik.butifactory
 
-import com.gilt.gfc.semver.SemVer
 import io.finch._
 import io.finch.syntax._
 
@@ -12,9 +11,9 @@ object VersionsHandler {
       group: String =>
         val versions = db.findVersionsBy(group)
           .sortWith{ (v1, v2) =>
-            SemVer(v1.version) > SemVer(v2.version) }
+            v1.versionCode > v2.versionCode }
           .map { version =>
-            ArtifactVersionAndroid(version.version, frontend.pathToURL(version.filename))
+            ArtifactVersionAndroid(version.version, version.versionCode, frontend.pathToURL(version.filename))
           }
         Ok(Versions(bundleName = s"$group", versions = versions))
     }

@@ -15,16 +15,17 @@ class ApkService(datastore: Datastore, storageBackend: ArtifactStorageBackend) {
   def uploadFile(apk: ApkFileContainer): Either[String, ArtifactVersion] = {
     val artifactName = apkToName(apk.apkFile)
     val version = apk.apkFile.getApkMeta.getVersionName
+    val versionCode = apk.apkFile.getApkMeta.getVersionCode
 
     datastore.findArtifactByName(artifactName) match {
       case None =>
         Left("artifact not found")
       case Some(_) =>
-        datastore.findArtifactVersion(artifactName, version) match {
+        datastore.findArtifactVersion(artifactName, versionCode) match {
           case None =>
             val filename = apkToFilename(apk.apkFile)
             storageBackend.storeArtifact(filename, apk.file)
-            Right(datastore.createArtifactVersion(artifactName, version, filename))
+            Right(datastore.createArtifactVersion(artifactName, version, versionCode, filename))
           case Some(_) => Left("already exist")
         }
     }
