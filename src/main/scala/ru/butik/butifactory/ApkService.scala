@@ -10,7 +10,7 @@ case class ApkFileContainer(apkFile: AbstractApkFile, file: File) extends Closea
   }
 }
 
-class ApkService(datastore: Datastore, storageBackend: ArtifactStorageBackend) {
+class ApkService(datastore: Datastore, storageBackend: ArtifactStorageBackend, pushService: PushService) {
 
   def uploadFile(apk: ApkFileContainer): Either[String, ArtifactVersion] = {
     val artifactName = apkToName(apk.apkFile)
@@ -25,9 +25,17 @@ class ApkService(datastore: Datastore, storageBackend: ArtifactStorageBackend) {
           case None =>
             val filename = apkToFilename(apk.apkFile)
             storageBackend.storeArtifact(filename, apk.file)
-            Right(datastore.createArtifactVersion(artifactName, version, versionCode, filename))
+            val artifactVersion = datastore.createArtifactVersion(artifactName, version, versionCode, filename)
+            notifyDevices(artifactVersion)
+            Right(artifactVersion)
           case Some(_) => Left("already exist")
         }
+    }
+  }
+
+  def notifyDevices(artifactVersion: ArtifactVersion): Unit = {
+    datastore.fetchSubscriptions(artifactVersion.name).foreach { subscription =>
+      pushService.pushDevice(subscription.deviceId, artifactVersion)
     }
   }
 

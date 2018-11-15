@@ -8,6 +8,7 @@ import scala.concurrent.ExecutionContext
 
 case class Artifact(name: String)
 case class ArtifactVersion(name: String, version: String, versionCode: Long, filename: String)
+case class Subscription(name: String, deviceId: String)
 
 object DatastoreDoobie {
   val testUrl = "jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1"
@@ -34,6 +35,12 @@ class DatastoreDoobie(val xa: Transactor.Aux[IO, Unit]) extends Datastore {
     sql"select name from artifacts where name = $name".query[Artifact]
   def insertArtifact(name: String): doobie.Update0 =
     sql"insert into artifacts(name) values ($name)".update
+  def insertSubscriptionQuery(name: String, deviceId: String): doobie.Update0 =
+    sql"insert into subscription(name, device_id) values($name, $deviceId)".update
+  def findSubscriptionQuery(name: String, deviceId: String): doobie.Query0[Subscription] =
+    sql"select name, device_id from subscription where name = $name and device_id = $deviceId".query[Subscription]
+  def findSubscriptionsQuery(name: String): doobie.Query0[Subscription] =
+    sql"select name, device_id from subscription where name = $name".query[Subscription]
 
   override def artifacts(): List[Artifact] = {
     artifactsQuery().to[List].transact(xa).unsafeRunSync
@@ -68,5 +75,21 @@ class DatastoreDoobie(val xa: Transactor.Aux[IO, Unit]) extends Datastore {
 
   override def findVersionsBy(group: String): List[ArtifactVersion] = {
     artifactVersionQuery(group).to[List].transact(xa).unsafeRunSync
+  }
+
+  override def addSubscription(name: String, deviceId: String): Subscription = {
+    findSubscriptionQuery(name, deviceId).option.transact(xa).unsafeRunSync() match {
+      case None =>
+        val res = for {
+          _ <- insertSubscriptionQuery(name, deviceId).run
+          p <- findSubscriptionQuery(name, deviceId).unique
+        } yield p
+        res.transact(xa).unsafeRunSync()
+      case Some(subscription) => subscription
+    }
+  }
+
+  override def fetchSubscriptions(name: String): List[Subscription] = {
+    findSubscriptionsQuery(name).to[List].transact(xa).unsafeRunSync()
   }
 }

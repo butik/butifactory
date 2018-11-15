@@ -3,6 +3,8 @@ package ru.butik.butifactory
 import java.io.File
 
 import better.files.Resource
+import com.twitter.finagle.http.Response
+import com.twitter.util.Future
 import net.dongliu.apk.parser.ApkFile
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfter, FunSpec}
@@ -15,7 +17,8 @@ class ApkServerTest extends FunSpec
 
   private val datastore = mock[Datastore]
   private val storage = mock[ArtifactStorageBackend]
-  private val service = new ApkService(datastore, storage)
+  private val pushService = mock[PushService]
+  private val service = new ApkService(datastore, storage, pushService)
   private val apk = new ApkFile(apkFile)
   private val apkContainer = ApkFileContainer(apk, new File(apkFile))
 
@@ -40,6 +43,8 @@ class ApkServerTest extends FunSpec
     (datastore.createArtifactVersion _)
       .expects(expect.name, expect.version, expect.versionCode, expect.filename)
       .returning(expect)
+    (datastore.fetchSubscriptions _).expects(expect.name).returns(List(Subscription(expect.name, "123")))
+    (pushService.pushDevice _).expects("123", *).returns(Future { Response() })
 
     (storage.storeArtifact _).expects(expect.filename, apkContainer.file)
 
