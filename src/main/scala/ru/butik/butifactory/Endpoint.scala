@@ -28,6 +28,7 @@ object ApiEndpoints {
     VersionsHandler.versions(datastore, frontend) :+:
       FileHandler.artifactUpload(apkService) :+:
       ArtifactsHandler.create(datastore) :+:
+      SubscribeHandler.subscribe(datastore) :+:
       frontend.fileServeHandler
     ).toService
 }
