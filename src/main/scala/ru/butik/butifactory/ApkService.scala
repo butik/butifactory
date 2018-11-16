@@ -41,11 +41,11 @@ class ApkService(datastore: Datastore, storageBackend: ArtifactStorageBackend, p
 
   def apkToName(apk: AbstractApkFile): String = {
     val meta = apk.getApkMeta
-    s"${meta.getPackageName}.${meta.getName}"
+    s"${meta.getPackageName}"
   }
 
   def apkToFilename(apk: AbstractApkFile): String = {
     val meta = apk.getApkMeta
-    s"${meta.getPackageName}/${meta.getName}-${meta.getVersionName}.apk"
+    s"${meta.getPackageName}/${meta.getPackageName}-${meta.getVersionCode}.apk"
   }
 }

@@ -36,7 +36,7 @@ class ApkServerTest extends FunSpec
   }
 
   it("should create artifact and store in storage") {
-    val expect = ArtifactVersion("ru.butik.fitassist.Fit-Assist", "1.1.3", 6, "ru.butik.fitassist/Fit-Assist-1.1.3.apk")
+    val expect = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk")
 
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
     (datastore.findArtifactVersion _).expects(*, *).returning(None)
