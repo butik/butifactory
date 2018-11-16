@@ -29,8 +29,11 @@ object Main extends TwitterServer {
   val api: Service[Request, Response] = ApiEndpoints.makeService(db, storageFrontend, apkService)
 
   def main(): Unit = {
+    import com.twitter.conversions.storage._
+
     val server = Http.server
       .configured(Stats(statsReceiver))
+      .withMaxRequestSize(50.megabyte)
       .serve(cfg.addr, api)
 
     onExit {
