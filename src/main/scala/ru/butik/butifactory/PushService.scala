@@ -11,7 +11,7 @@ import io.circe.syntax._
 import ru.butik.butifactory.PushService.{GoogleMessageFormat, GoogleMessageFormatPayload}
 
 object PushService {
-  case class GoogleMessageFormatPayload(messageType: String, artifactVersion: ArtifactVersion)
+  case class GoogleMessageFormatPayload(messageType: String, artifactVersion: ArtifactVersionAndroid)
   case class GoogleMessageFormat(to: String, data: GoogleMessageFormatPayload, priority: String)
 
   implicit val encodeGoogleMessageFormatPayload: Encoder[GoogleMessageFormatPayload] = (a: GoogleMessageFormatPayload) =>
@@ -28,7 +28,7 @@ class PushService(apiKey: String) {
     .withTransport.tls("fcm.googleapis.com")
     .newService("fcm.googleapis.com:443")
 
-  def pushDevice(deviceId: String, artifactVersion: ArtifactVersion): Future[Response] = {
+  def pushDevice(deviceId: String, artifactVersion: ArtifactVersionAndroid): Future[Response] = {
     val request = http.Request(http.Method.Post, "/fcm/send")
     request.host = "fcm.googleapis.com"
     request.setContentTypeJson

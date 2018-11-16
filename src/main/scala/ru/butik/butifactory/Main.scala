@@ -24,7 +24,7 @@ object Main extends TwitterServer {
   val storageFrontend = new SelfHostedHTTPArtifactStorageFrontend(cfg.servePath, cfg.dataDir)
 
   val pushService = new PushService(cfg.googlePushKey)
-  val apkService = new ApkService(db, storageBackend, pushService)
+  val apkService = new ApkService(db, storageBackend, storageFrontend, pushService)
 
   val api: Service[Request, Response] = ApiEndpoints.makeService(db, storageFrontend, apkService)
 

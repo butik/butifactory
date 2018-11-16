@@ -17,8 +17,9 @@ class ApkServerTest extends FunSpec
 
   private val datastore = mock[Datastore]
   private val storage = mock[ArtifactStorageBackend]
+  private val frontend = mock[ArtifactStorageFrontend]
   private val pushService = mock[PushService]
-  private val service = new ApkService(datastore, storage, pushService)
+  private val service = new ApkService(datastore, storage, frontend, pushService)
   private val apk = new ApkFile(apkFile)
   private val apkContainer = ApkFileContainer(apk, new File(apkFile))
 
@@ -36,18 +37,20 @@ class ApkServerTest extends FunSpec
   }
 
   it("should create artifact and store in storage") {
-    val expect = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk")
+    val version = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk")
+    val expect = ArtifactVersionAndroid(version.version, version.versionCode, "http://test.ru/abc")
 
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
     (datastore.findArtifactVersion _).expects(*, *).returning(None)
     (datastore.createArtifactVersion _)
-      .expects(expect.name, expect.version, expect.versionCode, expect.filename)
-      .returning(expect)
-    (datastore.fetchSubscriptions _).expects(expect.name).returns(List(Subscription(expect.name, "123")))
+      .expects(version.name, version.version, version.versionCode, version.filename)
+      .returning(version)
+    (datastore.fetchSubscriptions _).expects(version.name).returns(List(Subscription(version.name, "123")))
     (pushService.pushDevice _).expects("123", *).returns(Future { Response() })
 
-    (storage.storeArtifact _).expects(expect.filename, apkContainer.file)
+    (storage.storeArtifact _).expects(version.filename, apkContainer.file)
+    (frontend.pathToURL _).expects("ru.butik.fitassist/ru.butik.fitassist-6.apk").returns(expect.url)
 
-    assert(service.uploadFile(apkContainer) === Right(expect))
+    assert(service.uploadFile(apkContainer) === Right(version))
   }
 }

@@ -9,7 +9,7 @@ class PushTest extends FunSpec{
     val pushService = new PushService("")
 
     val deviceId = ""
-    val artifactVersion = ArtifactVersion("test", "1.1.1", 8, "http://test.com")
+    val artifactVersion = ArtifactVersionAndroid("1.1.1", 8, "http://test.com")
     val fut = pushService.pushDevice(deviceId, artifactVersion).onSuccess { r =>
       println(r)
       println("ok")
