@@ -55,7 +55,8 @@ object ArtifactStorageBackend {
       Ok(AsyncStream.fromFuture(reader.read(Int.MaxValue)).flatMap {
         case None => AsyncStream.empty
         case Some(a) => a +:: fromReader(reader)
-      }).withHeader((Fields.ContentDisposition, s"attachment; filename=${file.getName}"))
+      }).withHeader((Fields.ContentDisposition, "attachment; filename=\"" + file.getName + "\""))
+        .withHeader((Fields.ContentType, "application/octet-stream"))
       //  .fromReader(reader, chunkSize = 512.kilobytes.inBytes.toInt)
     }
   }
