@@ -3,9 +3,9 @@ package ru.butik.butifactory
 import java.io.File
 
 import better.files._
-
 import better.files.{File => ScalaFile, _}
 import com.twitter.concurrent.AsyncStream
+import com.twitter.finagle.http.Fields
 import com.twitter.io.{Buf, Reader}
 import io.finch._
 import io.finch.syntax._
@@ -50,11 +50,12 @@ object ArtifactStorageBackend {
       }
 
     val fileServeHandler: Endpoint[AsyncStream[Buf]] = get("data" :: paths[String]) { paths: Seq[String] =>
-      val reader: Reader[Buf] = Reader.fromFile((dataDir / FilenameUtils.normalizeNoEndSeparator(paths.mkString("/"))).toJava)
+      val file = (dataDir / FilenameUtils.normalizeNoEndSeparator(paths.mkString("/"))).toJava
+      val reader: Reader[Buf] = Reader.fromFile(file)
       Ok(AsyncStream.fromFuture(reader.read(Int.MaxValue)).flatMap {
         case None => AsyncStream.empty
         case Some(a) => a +:: fromReader(reader)
-      })
+      }).withHeader((Fields.ContentDisposition, s"attachment; filename=${file.getName}"))
       //  .fromReader(reader, chunkSize = 512.kilobytes.inBytes.toInt)
     }
   }
