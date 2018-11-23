@@ -8,5 +8,6 @@ trait Datastore {
   def createArtifactVersion(name: String, version: String, versionCode: Long, filename: String): ArtifactVersion
   def findVersionsBy(group: String): List[ArtifactVersion]
   def addSubscription(name: String, deviceId: String): Subscription
+  def removeSubscription(name: String, deviceId: String): Int
   def fetchSubscriptions(name: String): List[Subscription]
 }

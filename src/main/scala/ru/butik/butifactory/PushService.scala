@@ -1,14 +1,14 @@
 package ru.butik.butifactory
 
-import com.twitter.finagle.http.Response
 import com.twitter.finagle.service.Backoff
 import com.twitter.finagle.{Http, http}
 import com.twitter.io.Buf.ByteArray.Owned
 import com.twitter.util.Future
-import io.circe.{Encoder, Json}
+import io.circe.Decoder.Result
+import io.circe._
 import io.circe.generic.auto._
 import io.circe.syntax._
-import ru.butik.butifactory.PushService.{GoogleMessageFormat, GoogleMessageFormatPayload}
+import ru.butik.butifactory.PushService.{GoogleMessageFormat, GoogleMessageFormatPayload, GoogleMessageResponse}
 
 object PushService {
   case class GoogleMessageFormatPayload(messageType: String, artifactVersion: ArtifactVersionAndroid)
@@ -19,6 +19,19 @@ object PushService {
       ("type", Json.fromString(a.messageType)),
       ("artifactVersion", a.artifactVersion.asJson)
     )
+
+  case class GoogleMessageResponse(multicastId: Long, success: Int, failure: Int)
+  implicit val decodeGoogleMessageResponse: Decoder[GoogleMessageResponse] = new Decoder[GoogleMessageResponse] {
+    override def apply(c: HCursor): Result[GoogleMessageResponse] = {
+      for {
+        multicastId <- c.downField("multicast_id").as[Long]
+        success <- c.downField("success").as[Int]
+        failure <- c.downField("failure").as[Int]
+      } yield {
+        GoogleMessageResponse(multicastId, success, failure)
+      }
+    }
+  }
 }
 
 class PushService(apiKey: String) {
@@ -28,7 +41,7 @@ class PushService(apiKey: String) {
     .withTransport.tls("fcm.googleapis.com")
     .newService("fcm.googleapis.com:443")
 
-  def pushDevice(deviceId: String, artifactVersion: ArtifactVersionAndroid): Future[Response] = {
+  def pushDevice(deviceId: String, artifactVersion: ArtifactVersionAndroid): Future[Either[String, GoogleMessageResponse]] = {
     val request = http.Request(http.Method.Post, "/fcm/send")
     request.host = "fcm.googleapis.com"
     request.setContentTypeJson
@@ -39,6 +52,17 @@ class PushService(apiKey: String) {
     val message = GoogleMessageFormat(deviceId, payload, priority = "high").asJson.noSpaces
     request.content(Owned(message.getBytes))
 
-    twitter(request)
+    twitter(request).flatMap { response =>
+      import PushService._
+      import io.circe.parser._
+      val content = response.contentString
+      Future.value(parse(content) match {
+        case Left(err) => Left(err.message)
+        case Right(json) => json.as[GoogleMessageResponse] match {
+          case Left(err) => Left(err.message)
+          case Right(googleMessage) => Right(googleMessage)
+        }
+      })
+    }
   }
 }

@@ -58,6 +58,9 @@ class DatastoreTest extends FunSpec
   it("insertSubscription") {
     check(db.insertSubscriptionQuery("", ""))
   }
+  it("deleteSubscription") {
+    check(db.deleteSubscriptionQuery("", ""))
+  }
   it("findSubscription") {
     check(db.findSubscriptionQuery("", ""))
   }
@@ -92,5 +95,14 @@ class DatastoreTest extends FunSpec
     assert(db.addSubscription(expected.name, expected.deviceId) === expected)
     assert(db.addSubscription(expected.name, expected.deviceId) === expected)
     assert(db.fetchSubscriptions(expected.name) === List(expected))
+  }
+
+  it("should remove subscription") {
+    val expected = Subscription("name", "123")
+
+    assert(db.addSubscription(expected.name, expected.deviceId) === expected)
+    assert(db.fetchSubscriptions(expected.name) === List(expected))
+    assert(db.removeSubscription(expected.name, expected.deviceId) === 1)
+    assert(db.fetchSubscriptions(expected.name) === List())
   }
 }

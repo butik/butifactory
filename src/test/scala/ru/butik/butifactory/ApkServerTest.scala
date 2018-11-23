@@ -3,11 +3,11 @@ package ru.butik.butifactory
 import java.io.File
 
 import better.files.Resource
-import com.twitter.finagle.http.Response
 import com.twitter.util.Future
 import net.dongliu.apk.parser.ApkFile
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfter, FunSpec}
+import ru.butik.butifactory.PushService.GoogleMessageResponse
 
 class ApkServerTest extends FunSpec
   with BeforeAndAfter
@@ -46,7 +46,27 @@ class ApkServerTest extends FunSpec
       .expects(version.name, version.version, version.versionCode, version.filename)
       .returning(version)
     (datastore.fetchSubscriptions _).expects(version.name).returns(List(Subscription(version.name, "123")))
-    (pushService.pushDevice _).expects("123", *).returns(Future { Response() })
+    (pushService.pushDevice _).expects("123", *).returns(Future { Right(GoogleMessageResponse(1, 0, 0)) })
+
+    (storage.storeArtifact _).expects(version.filename, apkContainer.file)
+    (frontend.pathToURL _).expects("ru.butik.fitassist/ru.butik.fitassist-6.apk").returns(expect.url)
+
+    assert(service.uploadFile(apkContainer) === Right(version))
+  }
+
+  it("should remove subscription if error from GCM") {
+    val version = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk")
+    val expect = ArtifactVersionAndroid(version.version, version.versionCode, "http://test.ru/abc")
+
+    (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
+    (datastore.findArtifactVersion _).expects(*, *).returning(None)
+    (datastore.createArtifactVersion _)
+      .expects(version.name, version.version, version.versionCode, version.filename)
+      .returning(version)
+    (datastore.fetchSubscriptions _).expects(version.name).returns(List(Subscription(version.name, "123")))
+    (pushService.pushDevice _).expects("123", *).returns(Future { Left("error") })
+
+    (datastore.removeSubscription _).expects(version.name, "123").returns(1)
 
     (storage.storeArtifact _).expects(version.filename, apkContainer.file)
     (frontend.pathToURL _).expects("ru.butik.fitassist/ru.butik.fitassist-6.apk").returns(expect.url)

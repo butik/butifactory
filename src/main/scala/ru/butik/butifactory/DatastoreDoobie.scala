@@ -37,6 +37,8 @@ class DatastoreDoobie(val xa: Transactor.Aux[IO, Unit]) extends Datastore {
     sql"insert into artifacts(name) values ($name)".update
   def insertSubscriptionQuery(name: String, deviceId: String): doobie.Update0 =
     sql"insert into subscription(name, device_id) values($name, $deviceId)".update
+  def deleteSubscriptionQuery(name: String, deviceId: String): doobie.Update0 =
+    sql"delete from subscription where name = $name and device_id = $deviceId".update
   def findSubscriptionQuery(name: String, deviceId: String): doobie.Query0[Subscription] =
     sql"select name, device_id from subscription where name = $name and device_id = $deviceId".query[Subscription]
   def findSubscriptionsQuery(name: String): doobie.Query0[Subscription] =
@@ -91,5 +93,9 @@ class DatastoreDoobie(val xa: Transactor.Aux[IO, Unit]) extends Datastore {
 
   override def fetchSubscriptions(name: String): List[Subscription] = {
     findSubscriptionsQuery(name).to[List].transact(xa).unsafeRunSync()
+  }
+
+  override def removeSubscription(name: String, deviceId: String): Int = {
+    deleteSubscriptionQuery(name, deviceId).run.transact(xa).unsafeRunSync()
   }
 }
