@@ -38,7 +38,7 @@ class DatastoreTest extends FunSpec
   }
 
   it("checkInsertArtifactVersion") {
-    check(db.insertArtifactVersion("", "", 6, ""))
+    check(db.insertArtifactVersion("", "", 6, "", Option("")))
   }
   it("artifactVersionQueryByNameAndVersionCode") {
     check(db.artifactVersionQuery("", 6))
@@ -72,9 +72,10 @@ class DatastoreTest extends FunSpec
     val artifact = "test"
     val version = "1.2.3+Test"
     val filename = "apktest.apk"
-    val expected = ArtifactVersion(artifact, version, 6, filename)
+    val md5 = Option("1e6566b09c7b5a41612d804330a8988c")
+    val expected = ArtifactVersion(artifact, version, 6, filename, md5)
 
-    assert(db.createArtifactVersion(artifact, version, expected.versionCode, filename) === expected)
+    assert(db.createArtifactVersion(artifact, version, expected.versionCode, filename, md5) === expected)
     assert(db.findArtifactVersion(artifact, expected.versionCode) === Some(expected))
     assert(db.findArtifactVersion("unknown", expected.versionCode) === None)
   }
@@ -83,9 +84,10 @@ class DatastoreTest extends FunSpec
     val artifact = "test.one"
     val version = "1.2.3+Test"
     val filename = "apktest.apk"
-    val expected = ArtifactVersion(artifact, version, 6, filename)
+    val md5 = Option("1e6566b09c7b5a41612d804330a8988c")
+    val expected = ArtifactVersion(artifact, version, 6, filename, md5)
 
-    assert(db.createArtifactVersion(artifact, version, expected.versionCode, filename) === expected)
+    assert(db.createArtifactVersion(artifact, version, expected.versionCode, filename, md5) === expected)
     assert(db.findVersionsBy("test.one") === List(expected))
   }
 

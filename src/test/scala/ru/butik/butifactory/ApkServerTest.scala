@@ -31,19 +31,19 @@ class ApkServerTest extends FunSpec
 
   it("should check for version") {
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
-    (datastore.findArtifactVersion _).expects(*, *).returning(Some(ArtifactVersion("name", "1.2.3", 6, "file")))
+    (datastore.findArtifactVersion _).expects(*, *).returning(Some(ArtifactVersion("name", "1.2.3", 6, "file", Option("368d2a55e5d50aa5d8ce6b81d8c93123"))))
 
     assert(service.uploadFile(apkContainer) === Left("already exist"))
   }
 
   it("should create artifact and store in storage") {
-    val version = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk")
+    val version = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk", Option("368d2a55e5d50aa5d8ce6b81d8c93123"))
     val expect = ArtifactVersionAndroid(version.version, version.versionCode, "http://test.ru/abc")
 
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
     (datastore.findArtifactVersion _).expects(*, *).returning(None)
     (datastore.createArtifactVersion _)
-      .expects(version.name, version.version, version.versionCode, version.filename)
+      .expects(version.name, version.version, version.versionCode, version.filename, version.md5)
       .returning(version)
     (datastore.fetchSubscriptions _).expects(version.name).returns(List(Subscription(version.name, "123")))
     (pushService.pushDevice _).expects("123", *).returns(Future { Right(GoogleMessageResponse(1, 0, 0)) })
@@ -55,13 +55,13 @@ class ApkServerTest extends FunSpec
   }
 
   it("should remove subscription if error from GCM") {
-    val version = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk")
+    val version = ArtifactVersion("ru.butik.fitassist", "1.1.3", 6, "ru.butik.fitassist/ru.butik.fitassist-6.apk", Option("368d2a55e5d50aa5d8ce6b81d8c93123"))
     val expect = ArtifactVersionAndroid(version.version, version.versionCode, "http://test.ru/abc")
 
     (datastore.findArtifactByName _).expects(*).returning(Some(Artifact("name")))
     (datastore.findArtifactVersion _).expects(*, *).returning(None)
     (datastore.createArtifactVersion _)
-      .expects(version.name, version.version, version.versionCode, version.filename)
+      .expects(version.name, version.version, version.versionCode, version.filename, version.md5)
       .returning(version)
     (datastore.fetchSubscriptions _).expects(version.name).returns(List(Subscription(version.name, "123")))
     (pushService.pushDevice _).expects("123", *).returns(Future { Left("error") })

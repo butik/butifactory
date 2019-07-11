@@ -1,0 +1,1 @@
+ALTER TABLE artifacts_versions ADD COLUMN md5 varchar NULL

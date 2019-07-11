@@ -17,8 +17,8 @@ class VersionHanderTest extends FunSpec
     val datastore = mock[Datastore]
     (datastore.findVersionsBy _).expects("group.name").returns(
       List(
-        ArtifactVersion("group.name", "", 5, "test_url2"),
-        ArtifactVersion("group.name", "", 6, "test_url4")
+        ArtifactVersion("group.name", "", 5, "test_url2", Option("368d2a55e5d50aa5d8ce6b81d8c93123")),
+        ArtifactVersion("group.name", "", 6, "test_url4", Option("368d2a55e5d50aa5d8ce6b81d8c93123"))
       )
     )
 

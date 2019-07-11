@@ -7,7 +7,7 @@ import doobie.util.yolo
 import scala.concurrent.ExecutionContext
 
 case class Artifact(name: String)
-case class ArtifactVersion(name: String, version: String, versionCode: Long, filename: String)
+case class ArtifactVersion(name: String, version: String, versionCode: Long, filename: String, md5: Option[String])
 case class Subscription(name: String, deviceId: String)
 
 object DatastoreDoobie {
@@ -25,12 +25,12 @@ class DatastoreDoobie(val xa: Transactor.Aux[IO, Unit]) extends Datastore {
   val yoloDB: yolo.Yolo[IO] = xa.yolo
 
   def artifactsQuery(): doobie.Query0[Artifact] = sql"select name from artifacts".query[Artifact]
-  def insertArtifactVersion(name: String, version: String, versionCode: Long, filename: String): doobie.Update0 =
-    sql"insert into artifacts_versions(name, version, version_code, filename) values ($name, $version, $versionCode, $filename)".update
+  def insertArtifactVersion(name: String, version: String, versionCode: Long, filename: String, md5: Option[String]): doobie.Update0 =
+    sql"insert into artifacts_versions(name, version, version_code, filename, md5) values ($name, $version, $versionCode, $filename, $md5)".update
   def artifactVersionQuery(name: String, versionCode: Long): doobie.Query0[ArtifactVersion] =
-    sql"select name, version, version_code, filename from artifacts_versions where name = $name and version_code = $versionCode".query[ArtifactVersion]
+    sql"select name, version, version_code, filename, md5 from artifacts_versions where name = $name and version_code = $versionCode".query[ArtifactVersion]
   def artifactVersionQuery(name: String): doobie.Query0[ArtifactVersion] =
-    sql"select name, version, version_code, filename from artifacts_versions where name = $name".query[ArtifactVersion]
+    sql"select name, version, version_code, filename, md5 from artifacts_versions where name = $name".query[ArtifactVersion]
   def artifactQuery(name: String): doobie.Query0[Artifact] =
     sql"select name from artifacts where name = $name".query[Artifact]
   def insertArtifact(name: String): doobie.Update0 =
@@ -67,9 +67,9 @@ class DatastoreDoobie(val xa: Transactor.Aux[IO, Unit]) extends Datastore {
       .unsafeRunSync()
   }
 
-  override def createArtifactVersion(name: String, version: String, versionCode: Long, filename: String): ArtifactVersion = {
+  override def createArtifactVersion(name: String, version: String, versionCode: Long, filename: String, md5: Option[String]): ArtifactVersion = {
     val res = for {
-      _ <- insertArtifactVersion(name, version, versionCode, filename).run
+      _ <- insertArtifactVersion(name, version, versionCode, filename, md5).run
       p <- artifactVersionQuery(name, versionCode).unique
     } yield p
     res.transact(xa).unsafeRunSync()
