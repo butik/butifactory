@@ -13,7 +13,7 @@ object VersionsHandler {
           .sortWith{ (v1, v2) =>
             v1.versionCode > v2.versionCode }
           .map { version =>
-            ArtifactVersionAndroid(version.version, version.versionCode, frontend.pathToURL(version.filename))
+            ArtifactVersionAndroid(version.name, version.version, version.versionCode, frontend.pathToURL(version.filename))
           }
         Ok(Versions(bundleName = s"$group", versions = versions))
     }

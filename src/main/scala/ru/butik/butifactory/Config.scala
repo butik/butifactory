@@ -4,4 +4,7 @@ case class Config(db: String,
                   addr: String,
                   dataDir: String,
                   servePath: String,
-                  googlePushKey: String)
+                  pushHost: String,
+                  pushPort: String,
+                  pushMethod: String,
+                  pushKey: String)

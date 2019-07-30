@@ -46,7 +46,7 @@ class ApkService(datastore: Datastore, storageBackend: ArtifactStorageBackend, f
   }
 
   def notifyDevices(version: ArtifactVersion): Unit = {
-    val artifactVersion = ArtifactVersionAndroid(version.version, version.versionCode, frontend.pathToURL(version.filename))
+    val artifactVersion = ArtifactVersionAndroid(version.name, version.version, version.versionCode, frontend.pathToURL(version.filename))
     datastore.fetchSubscriptions(version.name).foreach { subscription =>
       pushService.pushDevice(subscription.deviceId, artifactVersion).foreach {
         case Left(_) =>

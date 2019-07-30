@@ -34,18 +34,18 @@ object PushService {
   }
 }
 
-class PushService(apiKey: String) {
+class PushService(config: Config) {
   import com.twitter.conversions.time._
   private val twitter = Http.client
     .withRetryBackoff(Backoff.exponentialJittered(2.seconds, 60.seconds).take(10))
-    .withTransport.tls("fcm.googleapis.com")
-    .newService("fcm.googleapis.com:443")
+    .withTransport.tls(config.pushHost)
+    .newService(s"${config.pushHost}:${config.pushPort}")
 
   def pushDevice(deviceId: String, artifactVersion: ArtifactVersionAndroid): Future[Either[String, GoogleMessageResponse]] = {
-    val request = http.Request(http.Method.Post, "/fcm/send")
-    request.host = "fcm.googleapis.com"
+    val request = http.Request(http.Method.Post, config.pushMethod)
+    request.host = config.pushHost
     request.setContentTypeJson
-    request.authorization = s"key=$apiKey"
+    request.authorization = s"key=${config.pushKey}"
 
     import PushService.encodeGoogleMessageFormatPayload
     val payload = GoogleMessageFormatPayload("NEWBUILD", artifactVersion)
