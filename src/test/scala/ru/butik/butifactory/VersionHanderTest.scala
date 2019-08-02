@@ -26,8 +26,8 @@ class VersionHanderTest extends FunSpec
 
     assert(response.bundleName === "group.name")
     assert(response.versions === List(
-      ArtifactVersionAndroid("", 6, url4, Option("368d2a55e5d50aa5d8ce6b81d8c93123")),
-      ArtifactVersionAndroid("", 5, url2, Option("368d2a55e5d50aa5d8ce6b81d8c93123"))
+      ArtifactVersionAndroid("group.name", "", 6, url4, Option("368d2a55e5d50aa5d8ce6b81d8c93123")),
+      ArtifactVersionAndroid("group.name", "", 5, url2, Option("368d2a55e5d50aa5d8ce6b81d8c93123"))
     ))
   }
 }
