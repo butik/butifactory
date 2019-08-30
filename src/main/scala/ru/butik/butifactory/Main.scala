@@ -3,14 +3,22 @@ package ru.butik.butifactory
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 
+import com.twitter.finagle.http.filter.{CommonLogFormatter, LoggingFilter}
 import com.twitter.finagle.http.{Request, Response}
 import com.twitter.finagle.{Http, Service}
 import com.twitter.finagle.param.Stats
+import com.twitter.logging.Logger
 import com.twitter.server.TwitterServer
 import com.twitter.util.Await
 import org.flywaydb.core.Flyway
 import ru.butik.butifactory.ArtifactStorageBackend.{DiskArtifactStorageBackend, SelfHostedHTTPArtifactStorageFrontend}
 import pureconfig.generic.auto._
+
+object MyLoggingFilter extends LoggingFilter[Request]({
+    val log = Logger("")
+    log.setUseParentHandlers(true)
+    log
+  }, new CommonLogFormatter)
 
 object Main extends TwitterServer {
   val cfg: Config = pureconfig.loadConfigFromFilesOrThrow[Config](files = List(Paths.get("butifactory.conf")))
@@ -26,7 +34,7 @@ object Main extends TwitterServer {
   val pushService = new PushService(cfg.pushHost, cfg.pushPort, cfg.pushPath, cfg.pushKey)
   val apkService = new ApkService(db, storageBackend, storageFrontend, pushService)
 
-  val api: Service[Request, Response] = ApiEndpoints.makeService(db, storageFrontend, apkService)
+  val api: Service[Request, Response] = MyLoggingFilter.andThen(ApiEndpoints.makeService(db, storageFrontend, apkService))
 
   def main(): Unit = {
     import com.twitter.conversions.storage._
