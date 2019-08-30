@@ -75,7 +75,8 @@ libraryDependencies ++= Seq(
   "com.github.finagle" %% "finch-core" % finchVersion,
   "com.github.finagle" %% "finch-circe" % finchVersion,
   "io.circe" %% "circe-generic" % "0.9.0",
-  "io.circe" %% "circe-parser" % "0.9.0"
+  "io.circe" %% "circe-parser" % "0.9.0",
+  "ch.qos.logback" % "logback-classic" % "1.2.3"
 )
 
 lazy val doobieVersion = "0.6.0"
